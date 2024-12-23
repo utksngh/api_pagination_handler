@@ -15,7 +15,7 @@ To get started with this project, follow these steps:
 
 ### 1. Clone the repository:
 
-```bash
+
 git clone https://github.com/utksngh/api_pagination_handler.git
 
 ### 2. Install Dependencies:
