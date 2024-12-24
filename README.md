@@ -22,7 +22,7 @@ git clone https://github.com/utksngh/api_pagination_handler.git
 
 npm install
 
-### 3. Install Dependencies:
+### 3. Run the server:
 
 npm run dev
 
