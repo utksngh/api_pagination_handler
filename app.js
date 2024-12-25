@@ -19,7 +19,6 @@ app.get('/', (req, res) => {
 })
 
 app.get('/final-response', (req, res) => {
-    console.log("Working on it");
     res.json(allPageData); 
 });
 
@@ -49,7 +48,7 @@ const handleApiData = async () => {
             allPageData[pageNo] = data.data; 
             isNext = data.is_next; 
             if (!isNext) {
-                console.log("Got Value in pageNo", pageNo);
+                console.log("Got is_next value false for the first time at pageNo", pageNo);
             }
         } else {
             retryKeys.push(pageNo);
@@ -61,7 +60,9 @@ const handleApiData = async () => {
 
     while (retryKeys.length !== 0) {
         await fetchDataParallely();
-        getLastPageNumberArticleData();
+        if (falseIsNextPageNumbers.length > 0){
+            getLastPageNumberArticleData();
+        }
     }
 };
 
@@ -125,15 +126,28 @@ const fetchDataParallely = async () => {
 };
 
 const getLastPageNumberArticleData = async () => {
-    sortedList = falseIsNextPageNumbers.sort((a,b) => a-b)
-    console.log(sortedList)
-    articles = null
+    falseIsNextPageNumbers.sort((a,b) => a-b);
+    lastPageNumber = Number(falseIsNextPageNumbers[0]);
+    articles = null;
     while(articles === null){
-        articles = await fetchData(falseIsNextPageNumbers[0])
+        articles = await fetchData(lastPageNumber);
     } 
-    allPageData[falseIsNextPageNumbers[0]] = articles.data
+    allPageData[lastPageNumber] = articles.data;
+    cleanUpMainData(lastPageNumber);
 }
- 
+
+const cleanUpMainData = (lastPageNumber) => {
+    const pageNumbersGreaterThanLastPageNumber = Object.keys(allPageData)
+        .map(pageNo => Number(pageNo)) 
+        .filter(pageNo => pageNo > lastPageNumber); 
+
+    pageNumbersGreaterThanLastPageNumber.forEach(pageNo => {
+        delete allPageData[pageNo];
+    });
+    console.log(Object.keys(allPageData));
+};
+
+
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
