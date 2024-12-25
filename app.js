@@ -50,19 +50,21 @@ const handleApiData = async () => {
             if (!isNext) {
                 console.log("Got is_next value false for the first time at pageNo", pageNo);
             }
+            else{
+            console.log("Successful Keys", Object.keys(allPageData));
+            }
         } else {
             retryKeys.push(pageNo);
         }
         pageNo += 1;
     }
 
-    console.log("allPageDetail", Object.keys(allPageData));
 
     while (retryKeys.length !== 0) {
         await fetchDataParallely();
-        if (falseIsNextPageNumbers.length > 0){
-            getLastPageNumberArticleData();
-        }
+    }
+    if (falseIsNextPageNumbers.length > 0){
+        getLastPageNumberArticleData();
     }
 };
 
@@ -115,7 +117,7 @@ const fetchDataParallely = async () => {
 
 
         retryKeys = results
-            .filter((result) => result.status === "fulfilled" && result.value.value === null)
+            .filter((result) => result.status === "fulfilled" && result.value.value === null )
             .map((result) => result.value.pageNo);
 
 
@@ -126,6 +128,7 @@ const fetchDataParallely = async () => {
 };
 
 const getLastPageNumberArticleData = async () => {
+    console.log("Entering last page number articles")
     falseIsNextPageNumbers.sort((a,b) => a-b);
     lastPageNumber = Number(falseIsNextPageNumbers[0]);
     articles = null;
@@ -137,9 +140,12 @@ const getLastPageNumberArticleData = async () => {
 }
 
 const cleanUpMainData = (lastPageNumber) => {
+    console.log("Entering cleanup data")
     const pageNumbersGreaterThanLastPageNumber = Object.keys(allPageData)
         .map(pageNo => Number(pageNo)) 
         .filter(pageNo => pageNo > lastPageNumber); 
+
+    console.log("Key Values to deleted", pageNumbersGreaterThanLastPageNumber)
 
     pageNumbersGreaterThanLastPageNumber.forEach(pageNo => {
         delete allPageData[pageNo];
