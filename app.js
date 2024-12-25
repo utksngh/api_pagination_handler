@@ -3,6 +3,7 @@ const express = require("express")
 const app = express();
 const allPageData = {}; 
 let retryKeys = [];
+let falseIsNextPageNumbers = []
 
 const fetchDataUrl = (page) => {
     return `http://localhost:5000/articles?page=${page}&per_page=12`
@@ -60,6 +61,7 @@ const handleApiData = async () => {
 
     while (retryKeys.length !== 0) {
         await fetchDataParallely();
+        getLastPageNumberArticleData();
     }
 };
 
@@ -95,8 +97,16 @@ const fetchDataParallely = async () => {
             .filter((result) => result.status === "fulfilled" && result.value?.value)
             .forEach((result) => {
                 if (result.value.value) {
-                    allPageData[result.value.pageNo] = result.value.value.data;
-                    console.log(`Added data for page ${result.value.pageNo}`);
+                    if (result.value.value.is_next === true)
+                    {
+                        allPageData[result.value.pageNo] = result.value.value.data;
+                        console.log(`Added data for page ${result.value.pageNo}`);
+                    }
+                    else {
+                        falseIsNextPageNumbers.push(result.value.pageNo);
+                        console.log(`Added data for page for IsNext false ${result.value.pageNo}`);
+                    }
+                    
                 } else {
                     console.log(`No data for page ${result.value.pageNo}`);
                 }
@@ -113,6 +123,16 @@ const fetchDataParallely = async () => {
         console.error("Unexpected error in fetchDataParallely:", error);
     }
 };
+
+const getLastPageNumberArticleData = async () => {
+    sortedList = falseIsNextPageNumbers.sort((a,b) => a-b)
+    console.log(sortedList)
+    articles = null
+    while(articles === null){
+        articles = await fetchData(falseIsNextPageNumbers[0])
+    } 
+    allPageData[falseIsNextPageNumbers[0]] = articles.data
+}
  
 app.listen(3000, () => {
     console.log('Server running on port 3000');
